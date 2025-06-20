@@ -2,25 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Advanced Weather App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div class="container">
-    <h1>Weather App</h1>
-    <label class="switch">
-        <input type="checkbox" id="modeToggle" />
-        <span class="slider round"></span>
-    </label>
-    <span class="mode-label">Dark Mode</span>
+    <header>
+        <h1>Weather Finder</h1>
+        <label class="toggle">
+            🌞
+            <input type="checkbox" id="modeToggle" />
+            🌚
+        </label>
+    </header>
 
-    <label for="cityInput"></label><input type="text" id="cityInput" placeholder="Enter city" />
-    <button onclick="getWeather()">Get Weather</button>
-    <button onclick="getWeatherByLocation()">Use My Location</button>
+    <section class="controls">
+        <label for="cityInput"></label><input type="text" id="cityInput" placeholder="Enter city..." />
+        <button onclick="getWeather()">Search</button>
+        <button onclick="getWeatherByLocation()">📍 My Location</button>
+    </section>
 
-    <div id="weatherResult"></div>
-    <div id="forecastResult"></div>
+    <section id="searchHistory">
+        <h3>Search History</h3>
+        <ul id="historyList"></ul>
+    </section>
+
+    <section id="weatherResult" class="card"></section>
+    <section id="forecastResult" class="forecast"></section>
 </div>
 
 <script src="script.js"></script>

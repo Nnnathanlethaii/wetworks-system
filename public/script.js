@@ -1,18 +1,18 @@
 const apiKey = 'aab1f56c56fa958aa9f345537430e0a1';
 
-// 🌙 Dark Mode toggle
 document.getElementById('modeToggle')?.addEventListener('change', function () {
   document.body.classList.toggle('dark', this.checked);
 });
 
-// 🌍 Fetch weather by city input
+document.addEventListener('DOMContentLoaded', loadHistory);
+
 async function getWeather() {
   const city = document.getElementById('cityInput')?.value.trim();
   if (!city) return showError('Please enter a city name');
+  saveToHistory(city);
   await fetchWeatherData({ city });
 }
 
-// 📍 Fetch weather by geolocation
 async function getWeatherByLocation() {
   if (!navigator.geolocation) return showError('Geolocation not supported');
 
@@ -21,7 +21,6 @@ async function getWeatherByLocation() {
   }, () => showError('Unable to retrieve your location'));
 }
 
-// 🔄 Generic fetch function
 async function fetchWeatherData({ city = '', lat, lon }) {
   try {
     const baseUrl = 'https://api.openweathermap.org/data/2.5';
@@ -47,21 +46,20 @@ async function fetchWeatherData({ city = '', lat, lon }) {
   }
 }
 
-// 🌦 Render current weather
 function displayWeather(data) {
-  const { name, main, weather } = data;
+  const { name, main, weather, wind, humidity } = data;
   if (!weather?.[0]) return showError('Incomplete weather data');
 
   const result = `
     <h2>${name}</h2>
     <p>${weather[0].description}</p>
-    <p><strong>${main.temp}°C</strong></p>
+    <p><strong>${main.temp}°C</strong> | Feels like ${main.feels_like}°C</p>
+    <p>Wind: ${wind?.speed ?? 'N/A'} m/s | Humidity: ${main.humidity}%</p>
     <img src="https://openweathermap.org/img/wn/${weather[0].icon}@2x.png" alt="${weather[0].description}" />
   `;
   document.getElementById('weatherResult').innerHTML = result;
 }
 
-// 📅 Render 5-day forecast
 function displayForecast(data) {
   const forecastEl = document.getElementById('forecastResult');
   forecastEl.innerHTML = '<h3>5-Day Forecast</h3>';
@@ -75,7 +73,7 @@ function displayForecast(data) {
     const temp = main.temp;
 
     forecastEl.innerHTML += `
-      <div style="margin: 0.5rem 0;">
+      <div>
         <strong>${date}</strong>: ${desc}, ${temp}°C
         <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}" />
       </div>
@@ -83,8 +81,32 @@ function displayForecast(data) {
   });
 }
 
-// ⚠️ Reusable error display
 function showError(message) {
   document.getElementById('weatherResult').innerHTML = `<p style="color:red;">${message}</p>`;
   document.getElementById('forecastResult').innerHTML = '';
+}
+
+function saveToHistory(city) {
+  let history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+  if (!history.includes(city)) {
+    history.unshift(city);
+    if (history.length > 5) history.pop();
+    localStorage.setItem('weatherHistory', JSON.stringify(history));
+    loadHistory();
+  }
+}
+
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  history.forEach(city => {
+    const li = document.createElement('li');
+    li.textContent = city;
+    li.onclick = () => {
+      document.getElementById('cityInput').value = city;
+      getWeather();
+    };
+    list.appendChild(li);
+  });
 }
