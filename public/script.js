@@ -8,18 +8,15 @@ document.addEventListener('DOMContentLoaded', loadHistory);
 
 async function getWeather() {
   const city = document.getElementById('cityInput')?.value.trim();
+  const country = document.getElementById('countryCode')?.value.trim();
+
   if (!city) return showError('Please enter a city name');
-  saveToHistory(city);
-  await fetchWeatherData({ city });
+
+  const query = country ? `${city},${country}` : city;
+  saveToHistory(query);
+  await fetchWeatherData({ city: query });
 }
 
-async function getWeatherByLocation() {
-  if (!navigator.geolocation) return showError('Geolocation not supported');
-
-  navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-    await fetchWeatherData({ lat: coords.latitude, lon: coords.longitude });
-  }, () => showError('Unable to retrieve your location'));
-}
 
 async function fetchWeatherData({ city = '', lat, lon }) {
   try {
@@ -86,27 +83,80 @@ function showError(message) {
   document.getElementById('forecastResult').innerHTML = '';
 }
 
-function saveToHistory(city) {
+function saveToHistory(query) {
   let history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
-  if (!history.includes(city)) {
-    history.unshift(city);
+  if (!history.includes(query)) {
+    history.unshift(query);
     if (history.length > 5) history.pop();
     localStorage.setItem('weatherHistory', JSON.stringify(history));
     loadHistory();
   }
 }
 
+
 function loadHistory() {
   const history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
   const list = document.getElementById('historyList');
+  const queryList = document.getElementById('queryList');
   list.innerHTML = '';
-  history.forEach(city => {
-    const li = document.createElement('li');
-    li.textContent = city;
-    li.onclick = () => {
-      document.getElementById('cityInput').value = city;
+  queryList.innerHTML = '';
+
+  history.forEach(query => {
+    const cityOnly = query.split(',')[0];
+
+    // Search History (city only)
+    const li1 = document.createElement('li');
+    const span1 = document.createElement('span');
+    span1.textContent = cityOnly;
+    span1.onclick = () => {
+      document.getElementById('cityInput').value = cityOnly;
       getWeather();
     };
-    list.appendChild(li);
+    const delBtn1 = document.createElement('button');
+    delBtn1.textContent = '❌';
+    delBtn1.onclick = (e) => {
+      e.stopPropagation();
+      deleteHistoryItem(query);
+    };
+    li1.appendChild(span1);
+    li1.appendChild(delBtn1);
+    list.appendChild(li1);
+
+    // Full Query List
+    const li2 = document.createElement('li');
+    const span2 = document.createElement('span');
+    span2.textContent = query;
+    span2.onclick = () => {
+      const parts = query.split(',');
+      document.getElementById('cityInput').value = parts[0];
+      document.getElementById('countryCode').value = parts[1] || '';
+      getWeather();
+    };
+    const delBtn2 = document.createElement('button');
+    delBtn2.textContent = '❌';
+    delBtn2.onclick = (e) => {
+      e.stopPropagation();
+      deleteHistoryItem(query);
+    };
+    li2.appendChild(span2);
+    li2.appendChild(delBtn2);
+    queryList.appendChild(li2);
   });
+}
+
+function deleteHistoryItem(query) {
+  let history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+  history = history.filter(item => item !== query);
+  localStorage.setItem('weatherHistory', JSON.stringify(history));
+  loadHistory();
+}
+
+function clearHistory() {
+  localStorage.removeItem('weatherHistory');
+  loadHistory();
+}
+
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }

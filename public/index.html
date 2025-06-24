@@ -18,14 +18,33 @@
     </header>
 
     <section class="controls">
-        <label for="cityInput"></label><input type="text" id="cityInput" placeholder="Enter city..." />
+        <label for="cityInput"></label><input type="text" id="cityInput" placeholder="Enter city..." autocomplete="off" />
+        <label for="countryCode"></label><select id="countryCode">
+            <option value="">🌍 Any Country</option>
+            <option value="US">🇺🇸 US</option>
+            <option value="GB">🇬🇧 UK</option>
+            <option value="FR">🇫🇷 France</option>
+            <option value="IN">🇮🇳 India</option>
+            <option value="JP">🇯🇵 Japan</option>
+            <option value="BR">🇧🇷 Brazil</option>
+            <option value="CA">🇨🇦 Canada</option>
+            <option value="DE">🇩🇪 Germany</option>
+            <!-- Add more as needed -->
+        </select>
         <button onclick="getWeather()">Search</button>
-        <button onclick="getWeatherByLocation()">📍 My Location</button>
+        <ul id="autocompleteList" class="autocomplete"></ul>
     </section>
 
-    <section id="searchHistory">
-        <h3>Search History</h3>
-        <ul id="historyList"></ul>
+    <section id="queryListSection">
+        <h3 onclick="toggleDropdown('queryList')">🔽 Full Query List</h3>
+        <ul id="queryList" class="dropdown-list"></ul>
+        <button onclick="clearHistory()" class="clear-btn">🧹 Clear All History</button>
+    </section>
+
+
+    <section id="searchHistorySection">
+        <h3 onclick="toggleDropdown('historyList')">🔽 Search History</h3>
+        <ul id="historyList" class="dropdown-list"></ul>
     </section>
 
     <section id="weatherResult" class="card"></section>
