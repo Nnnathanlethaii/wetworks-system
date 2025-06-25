@@ -17,7 +17,6 @@ async function getWeather() {
   await fetchWeatherData({ city: query });
 }
 
-
 async function fetchWeatherData({ city = '', lat, lon }) {
   try {
     const baseUrl = 'https://api.openweathermap.org/data/2.5';
@@ -97,50 +96,29 @@ function saveToHistory(query) {
 function loadHistory() {
   const history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
   const list = document.getElementById('historyList');
-  const queryList = document.getElementById('queryList');
   list.innerHTML = '';
-  queryList.innerHTML = '';
 
   history.forEach(query => {
     const cityOnly = query.split(',')[0];
 
-    // Search History (city only)
-    const li1 = document.createElement('li');
-    const span1 = document.createElement('span');
-    span1.textContent = cityOnly;
-    span1.onclick = () => {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = cityOnly;
+    span.onclick = () => {
       document.getElementById('cityInput').value = cityOnly;
       getWeather();
     };
-    const delBtn1 = document.createElement('button');
-    delBtn1.textContent = '❌';
-    delBtn1.onclick = (e) => {
-      e.stopPropagation();
-      deleteHistoryItem(query);
-    };
-    li1.appendChild(span1);
-    li1.appendChild(delBtn1);
-    list.appendChild(li1);
 
-    // Full Query List
-    const li2 = document.createElement('li');
-    const span2 = document.createElement('span');
-    span2.textContent = query;
-    span2.onclick = () => {
-      const parts = query.split(',');
-      document.getElementById('cityInput').value = parts[0];
-      document.getElementById('countryCode').value = parts[1] || '';
-      getWeather();
-    };
-    const delBtn2 = document.createElement('button');
-    delBtn2.textContent = '❌';
-    delBtn2.onclick = (e) => {
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '❌';
+    delBtn.onclick = (e) => {
       e.stopPropagation();
       deleteHistoryItem(query);
     };
-    li2.appendChild(span2);
-    li2.appendChild(delBtn2);
-    queryList.appendChild(li2);
+
+    li.appendChild(span);
+    li.appendChild(delBtn);
+    list.appendChild(li);
   });
 }
 
