@@ -1,11 +1,19 @@
-const apiKey = 'aab1f56c56fa958aa9f345537430e0a1';
+// === Config ===
+const CONFIG = {
+  API_KEY: 'aab1f56c56fa958aa9f345537430e0a1',
+  BASE_URL: 'https://api.openweathermap.org/data/2.5'
+};
 
+// === Theme Toggle ===
 document.getElementById('modeToggle')?.addEventListener('change', function () {
   document.body.classList.toggle('dark', this.checked);
 });
 
-document.addEventListener('DOMContentLoaded', loadHistory);
+document.addEventListener('DOMContentLoaded', () => {
+  loadHistory();
+});
 
+// === Weather Fetch Entry ===
 async function getWeather() {
   const city = document.getElementById('cityInput')?.value.trim();
   const country = document.getElementById('countryCode')?.value.trim();
@@ -17,17 +25,23 @@ async function getWeather() {
   await fetchWeatherData({ city: query });
 }
 
+// === Fetch API Logic ===
 async function fetchWeatherData({ city = '', lat, lon }) {
+  const loadingEl = document.getElementById('loading');
+  loadingEl.style.display = 'block';
+
   try {
-    const baseUrl = 'https://api.openweathermap.org/data/2.5';
     const query = city
       ? `q=${encodeURIComponent(city)}`
-      : `lat=${lat}&lon=${lon}`;
-    const common = `&appid=${apiKey}&units=metric`;
+      : lat && lon
+        ? `lat=${lat}&lon=${lon}`
+        : '';
+
+    const common = `&appid=${CONFIG.API_KEY}&units=metric`;
 
     const [weatherRes, forecastRes] = await Promise.all([
-      fetch(`${baseUrl}/weather?${query}${common}`),
-      fetch(`${baseUrl}/forecast?${query}${common}`)
+      fetch(`${CONFIG.BASE_URL}/weather?${query}${common}`),
+      fetch(`${CONFIG.BASE_URL}/forecast?${query}${common}`)
     ]);
 
     if (!weatherRes.ok || !forecastRes.ok) throw new Error('City not found');
@@ -39,9 +53,12 @@ async function fetchWeatherData({ city = '', lat, lon }) {
     displayForecast(forecastData);
   } catch (err) {
     showError(err.message);
+  } finally {
+    loadingEl.style.display = 'none';
   }
 }
 
+// === UI Renders ===
 function displayWeather(data) {
   const { name, main, weather, wind } = data;
   if (!weather?.[0]) return showError('Incomplete weather data');
@@ -58,8 +75,9 @@ function displayWeather(data) {
 
 function displayForecast(data) {
   const forecastEl = document.getElementById('forecastResult');
-  forecastEl.innerHTML = '<h3>5-Day Forecast</h3>';
+  if (!forecastEl) return;
 
+  let forecastHTML = '<h3>5-Day Forecast</h3>';
   const daily = data.list.filter(item => item.dt_txt.includes('12:00:00'));
 
   daily.forEach(({ dt_txt, weather, main }) => {
@@ -68,13 +86,14 @@ function displayForecast(data) {
     const icon = weather[0]?.icon ?? '01d';
     const temp = main.temp;
 
-    forecastEl.innerHTML += `
+    forecastHTML += `
       <div>
         <strong>${date}</strong>: ${desc}, ${temp}°C
         <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}" />
-      </div>
-    `;
+      </div>`;
   });
+
+  forecastEl.innerHTML = forecastHTML;
 }
 
 function showError(message) {
@@ -82,6 +101,7 @@ function showError(message) {
   document.getElementById('forecastResult').innerHTML = '';
 }
 
+// === History Handling ===
 function saveToHistory(query) {
   let history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
   if (!history.includes(query)) {
@@ -91,7 +111,6 @@ function saveToHistory(query) {
     loadHistory();
   }
 }
-
 
 function loadHistory() {
   const history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
@@ -136,5 +155,5 @@ function clearHistory() {
 
 function toggleDropdown(id) {
   const el = document.getElementById(id);
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
