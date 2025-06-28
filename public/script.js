@@ -43,7 +43,7 @@ async function fetchWeatherData({ city = '', lat, lon }) {
 }
 
 function displayWeather(data) {
-  const { name, main, weather, wind, humidity } = data;
+  const { name, main, weather, wind } = data;
   if (!weather?.[0]) return showError('Incomplete weather data');
 
   const result = `
